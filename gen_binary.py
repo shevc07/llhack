@@ -65,14 +65,19 @@ for j in range(notes_num):
 #排序
 a.sort(key=lambda x:x[2])
 
+to_del = []
 count = 0
+
 for i in range(len(a)-1):
-    if ((a[i+1][2] - a[i][2]) >= 0 and (a[i+1][2] - a[i][2]) <= 10 ) :
+    if ((a[i+1][2] - a[i][2]) >= 0 and (a[i+1][2] - a[i][2]) <= 5 ) :
         count = count + 1
         print a[i]
         print a[i+1]
         print "111111111111111111111 %d, %d"%((a[i+1][2] - a[i][2]), count)
-
+    else:
+        to_del.append(a[i])
+to_del.append(a[-1])
+a=to_del
 
 for i in range(len(a)-1):
     print a[i][0], a[i][1], a[i+1][2] - a[i][2]
@@ -109,10 +114,10 @@ byte2=['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0']#从右�
 for i in range(2,len(a)-1):
     byte2[16-a[i][0]] = str(a[i][1])
     #print "".join(byte2)
-    print "PORTB = B%s;"%("".join(byte2[:8]))
+    print "PORTB = B%s;"%("".join(byte2[:8])),
     print "PORTD = B%s;delay(%d);"%("".join(byte2[8:]),a[i+1][2] - a[i][2])
 byte2[16-a[-1][0]] = str(a[-1][1])
 #print "".join(byte2)
-print "PORTB = B%s;"%("".join(byte2[:8]))
+print "PORTB = B%s;"%("".join(byte2[:8])),
 print "PORTD = B%s;delay(%d);"%("".join(byte2[8:]),a[-1][2] - a[-2][2])
 
