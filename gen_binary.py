@@ -32,7 +32,7 @@ effect_value=[0]*notes_num
 step=1
 #处理notes
 for i in notes_list:
-    #print "notes_level",i["notes_level"],"effect",i["effect"],"position",i["position"],"notes_attribute",i["notes_attribute"],"timing_sec",i["timing_sec"],"effect_value",i["effect_value"]
+    print "notes_level",i["notes_level"],"effect",i["effect"],"position",i["position"],"notes_attribute",i["notes_attribute"],"timing_sec",i["timing_sec"],"effect_value",i["effect_value"]
     notes_level[step]=int(i["notes_level"])
     effect[step]=int(i["effect"])
     position[step]=int(i["position"])
@@ -52,7 +52,7 @@ for i in notes_list:
 a= []
 
 #转化为串行，同时将第一个节拍调整为0
-for j in range(notes_num-1):
+for j in range(notes_num):
 
     if effect[j] != 3:
         effect_value[j] = 50
@@ -60,6 +60,7 @@ for j in range(notes_num-1):
     #1是touchdown,0是touchup
     a.append((position[j],1,timing_sec[j]))
     a.append((position[j],0,timing_sec[j]+effect_value[j]))
+
 
 #排序
 a.sort(key=lambda x:x[2])
@@ -76,4 +77,42 @@ for i in range(len(a)-1):
 for i in range(len(a)-1):
     print a[i][0], a[i][1], a[i+1][2] - a[i][2]
 print a[-1][0],a[-1][1],a[-1][2] - a[-2][2]
+
+
+def Func(input):
+    m = 1
+    c=""
+    if (input == 0):
+        return "c0"
+    for i in range(1,1024,1):
+        if (m & input == m):
+            c=c+"c%d+"%m
+        m = m << 1
+    return c[:-1]
+
+hl=['LOW','HIGH']
+
+#生成串行arduino执行码
+for i in range(2,len(a)-1):
+    print "digitalWrite(pin%d,%s);delay(%s);"%(a[i][0], hl[a[i][1]], Func(a[i+1][2] - a[i][2]))
+print "digitalWrite(pin%d,%s);delay(%s);"%(a[-1][0],hl[a[-1][1]],Func(a[-1][2] - a[-2][2]))
+#
+for i in range(2,len(a)-1):
+    print "digitalWrite(pin%d,%s);delay(%s);"%(a[i][0], hl[a[i][1]], a[i+1][2] - a[i][2])
+print "digitalWrite(pin%d,%s);delay(%s);"%(a[-1][0],hl[a[-1][1]], a[-1][2] - a[-2][2])
+
+# for i in range(len(a)-1):
+#     print "arr[%d]"
+#生成2进制形态的arduino执行码
+byte2=['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0']#从右至左1-9
+
+for i in range(2,len(a)-1):
+    byte2[16-a[i][0]] = str(a[i][1])
+    #print "".join(byte2)
+    print "PORTB = B%s;"%("".join(byte2[:8]))
+    print "PORTD = B%s;delay(%d);"%("".join(byte2[8:]),a[i+1][2] - a[i][2])
+byte2[16-a[-1][0]] = str(a[-1][1])
+#print "".join(byte2)
+print "PORTB = B%s;"%("".join(byte2[:8]))
+print "PORTD = B%s;delay(%d);"%("".join(byte2[8:]),a[-1][2] - a[-2][2])
 
