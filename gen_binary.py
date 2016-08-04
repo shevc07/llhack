@@ -2,7 +2,7 @@
 
 import json
 
-f=open('song_notes/youqin_nochange_ex.json','r')
+f=open('song_notes/waowaopowerfulday_ex.json','r')
 fo=f.read()
 s=json.loads(fo)
 
@@ -65,24 +65,20 @@ for j in range(notes_num):
 #排序
 a.sort(key=lambda x:x[2])
 
-to_del = []
+b = []
+#计算间隔
+for i in range(len(a)-1):
+    b.append([a[i][0],a[i][1],a[i+1][2]-a[i][2]])
+b.append([a[-1][0],a[-1][1],10000])
+print b
+
 count = 0
-
-for i in range(len(a)-1):
-    if ((a[i+1][2] - a[i][2]) >= 0 and (a[i+1][2] - a[i][2]) <= 5 ) :
+for i in range(2,len(b)):
+    if ( b[i][2] >= 0 and b[i][2] <= 5 ) :
         count = count + 1
-        print a[i]
-        print a[i+1]
+        print b[i]
+        print b[i+1]
         print "111111111111111111111 %d, %d"%((a[i+1][2] - a[i][2]), count)
-    else:
-        to_del.append(a[i])
-to_del.append(a[-1])
-a=to_del
-
-for i in range(len(a)-1):
-    print a[i][0], a[i][1], a[i+1][2] - a[i][2]
-print a[-1][0],a[-1][1],a[-1][2] - a[-2][2]
-
 
 def Func(input):
     m = 1
@@ -98,26 +94,31 @@ def Func(input):
 hl=['LOW','HIGH']
 
 #生成串行arduino执行码
-for i in range(2,len(a)-1):
-    print "digitalWrite(pin%d,%s);delay(%s);"%(a[i][0], hl[a[i][1]], Func(a[i+1][2] - a[i][2]))
-print "digitalWrite(pin%d,%s);delay(%s);"%(a[-1][0],hl[a[-1][1]],Func(a[-1][2] - a[-2][2]))
-#
-for i in range(2,len(a)-1):
-    print "digitalWrite(pin%d,%s);delay(%s);"%(a[i][0], hl[a[i][1]], a[i+1][2] - a[i][2])
-print "digitalWrite(pin%d,%s);delay(%s);"%(a[-1][0],hl[a[-1][1]], a[-1][2] - a[-2][2])
+for i in range(2,len(b)):
+    print "digitalWrite(pin%d,%s);delay(%s);"%(b[i][0], hl[b[i][1]], b[i][2])
 
-# for i in range(len(a)-1):
-#     print "arr[%d]"
 #生成2进制形态的arduino执行码
 byte2=['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0']#从右至左1-9
 
-for i in range(2,len(a)-1):
-    byte2[16-a[i][0]] = str(a[i][1])
-    #print "".join(byte2)
-    print "PORTB = B%s;"%("".join(byte2[:8])),
-    print "PORTD = B%s;delay(%d);"%("".join(byte2[8:]),a[i+1][2] - a[i][2])
-byte2[16-a[-1][0]] = str(a[-1][1])
-#print "".join(byte2)
-print "PORTB = B%s;"%("".join(byte2[:8])),
-print "PORTD = B%s;delay(%d);"%("".join(byte2[8:]),a[-1][2] - a[-2][2])
+for i in range(2,len(b)):
+    byte2[16-b[i][0]] = str(b[i][1])
+    print "PORTB = B%s; PORTD = B%s; delay(%d);"%("".join(byte2[:8]),"".join(byte2[8:]),b[i][2])
+
+#去0delay
+#生成串行arduino执行码
+for i in range(2,len(b)):
+    if ( b[i][2] >= 0 and b[i][2] <= 5 ) :
+        print "digitalWrite(pin%d,%s);"%(b[i][0], hl[b[i][1]])
+    else:
+        print "digitalWrite(pin%d,%s);delay(%s);"%(b[i][0], hl[b[i][1]], b[i][2])
+
+#生成2进制形态的arduino执行码
+byte2=['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0']#从右至左1-9
+
+for i in range(2,len(b)):
+    byte2[16-b[i][0]] = str(b[i][1])
+    if ( b[i][2] >= 0 and b[i][2] <= 5 ) :
+        continue
+    else:
+        print "PORTB = B%s; PORTD = B%s; delay(%d);"%("".join(byte2[:8]),"".join(byte2[8:]),b[i][2])
 
